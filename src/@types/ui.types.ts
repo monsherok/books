@@ -6,6 +6,10 @@ export interface BooksState {
 	status: 'loading' | 'loaded' | 'error'
 	orderBy: 'relevance' | 'newest'
 	search: string
+	pagination: number
+	paginationStep: number
+	isInitialRequest: boolean
+	paginationStatus: 'loading' | 'loaded' | 'error'
 	category:
 		| 'all'
 		| 'art'
@@ -14,5 +18,4 @@ export interface BooksState {
 		| 'history'
 		| 'medical'
 		| 'poetry'
-	pagination: number
 }

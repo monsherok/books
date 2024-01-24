@@ -11,7 +11,7 @@ export const fetchBooks = createAsyncThunk<IBooksResponse, BooksState>(
 	async (booksState, thunkAPI) => {
 		try {
 			const { data } = await axios.get(
-				`?q='${booksState.search}'&orderBy=${booksState.orderBy}&startIndex=${booksState.pagination}&maxResults=5&key=${API_KEY}`
+				`?q='${booksState.search}'&orderBy=${booksState.orderBy}&startIndex=${booksState.pagination}&maxResults=30&key=${API_KEY}`
 			)
 			console.log(booksState.books.length)
 			return data
@@ -29,6 +29,9 @@ const initialState: BooksState = {
 	orderBy: 'relevance',
 	category: 'all',
 	pagination: 0,
+	paginationStatus: 'loading',
+	paginationStep: 30,
+	isInitialRequest: true,
 }
 
 const booksSlice = createSlice({
@@ -38,22 +41,33 @@ const booksSlice = createSlice({
 		setSearchText(state, action) {
 			state.search = action.payload
 			state.pagination = 0
+			state.isInitialRequest = true
 		},
-		fetchMoreBooks(state) {
-			state.pagination += 5
+		fetchMoreBooks(state, action) {
+			state.pagination = action.payload
+			state.isInitialRequest = false
 		},
 	},
 	extraReducers: builder => {
 		builder
 			.addCase(fetchBooks.pending, state => {
-				state.books = []
-				state.booksLength = 0
-				state.status = 'loading'
+				if (state.isInitialRequest) {
+					state.books = []
+					state.booksLength = 0
+					state.status = 'loading'
+				}
+				state.paginationStatus = 'loading'
 			})
 			.addCase(fetchBooks.fulfilled, (state, action) => {
-				action.payload.items.forEach(item => state.books.push(item))
-				state.booksLength = action.payload.totalItems
-				state.status = 'loaded'
+				if (state.isInitialRequest) {
+					state.books = action.payload.items
+					state.booksLength = action.payload.totalItems
+					state.status = 'loaded'
+					state.isInitialRequest = false
+				} else {
+					action.payload.items.forEach(item => state.books.push(item))
+				}
+				state.paginationStatus = 'loaded'
 			})
 			.addCase(fetchBooks.rejected, state => {
 				state.books = []

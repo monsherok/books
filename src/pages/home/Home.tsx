@@ -1,3 +1,4 @@
+import { Spinner } from '@material-tailwind/react'
 import Book from '../../components/book/Book'
 import {
 	useAppDispatch,
@@ -10,9 +11,11 @@ function Home() {
 	const dispatch = useAppDispatch()
 
 	function handleClick() {
-		dispatch(fetchMoreBooks())
-		dispatch(fetchBooks(books))
+		const paginationCount = books.books.length + books.paginationStep
+		dispatch(fetchMoreBooks(paginationCount))
+		dispatch(fetchBooks({ ...books, pagination: paginationCount }))
 	}
+
 	return (
 		<div className='my-6'>
 			{books.status === 'loading' ? (
@@ -26,7 +29,12 @@ function Home() {
 						))}
 					</div>
 					{books.booksLength && books.booksLength >= books.books.length ? (
-						<button onClick={handleClick}>Загрузить еще</button>
+						<button
+							className='flex items-center justify-center py-1 px-3 bg-brown-200 mx-auto'
+							onClick={handleClick}
+						>
+							{books.paginationStatus === 'loading' ? <Spinner /> : 'Load more'}
+						</button>
 					) : null}
 				</>
 			)}

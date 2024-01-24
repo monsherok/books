@@ -1,5 +1,7 @@
 import { ChangeEvent, KeyboardEvent, useState } from 'react'
 import { IoSearch } from 'react-icons/io5'
+import { useNavigate } from 'react-router-dom'
+
 import {
 	useAppDispatch,
 	useAppSelector,
@@ -10,6 +12,7 @@ function Search() {
 	const [search, setSearch] = useState('')
 	const dispatch = useAppDispatch()
 	const { books } = useAppSelector(state => state)
+	const navigate = useNavigate()
 
 	const onChange = (event: ChangeEvent<HTMLInputElement>) =>
 		setSearch(event.target.value)
@@ -28,10 +31,11 @@ function Search() {
 		if (search.trim() !== '') {
 			const value = search.trim()
 			dispatch(setSearchText(value))
-			dispatch(fetchBooks({ ...books, search: value }))
+			dispatch(fetchBooks({ ...books, search: value, pagination: 0 }))
 		} else {
 			return
 		}
+		navigate('/')
 	}
 
 	return (
