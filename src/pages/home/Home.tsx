@@ -16,6 +16,12 @@ function Home() {
 		dispatch(fetchBooks({ ...books, pagination: paginationCount }))
 	}
 
+	if (books.status === 'error') {
+		return (
+			<div className='my-6 mx-auto'>Произошла ошибка при получении данных</div>
+		)
+	}
+
 	if (
 		books.booksLength === 0 &&
 		!books.isInitialRequest &&
