@@ -16,10 +16,32 @@ function Home() {
 		dispatch(fetchBooks({ ...books, pagination: paginationCount }))
 	}
 
+	if (
+		books.booksLength === 0 &&
+		!books.isInitialRequest &&
+		books.status !== 'loading'
+	)
+		return (
+			<div className='my-6 mx-auto'>По вашему запросу ничего не найдено</div>
+		)
+
+	if (
+		books.booksLength === 0 &&
+		books.isInitialRequest &&
+		books.status !== 'loading'
+	)
+		return (
+			<div className='my-6 mx-auto'>
+				Чтобы найти книгу, введите название в поле поиска
+			</div>
+		)
+
 	return (
 		<div className='my-6'>
 			{books.status === 'loading' ? (
-				<h1>загрузка</h1>
+				<div className='my-6 flex items-center justify-center'>
+					<Spinner />
+				</div>
 			) : (
 				<>
 					<div className='text-center'>Found {books.booksLength} results</div>
@@ -28,7 +50,7 @@ function Home() {
 							<Book key={book.id + index} {...book} />
 						))}
 					</div>
-					{books.booksLength && books.booksLength >= books.books.length ? (
+					{books.booksLength && books.booksLength - 1 >= books.books.length ? (
 						<button
 							className='flex items-center justify-center py-1 px-3 bg-brown-200 mx-auto'
 							onClick={handleClick}

@@ -1,4 +1,8 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
+import {
+	createAsyncThunk,
+	createSlice,
+	type PayloadAction,
+} from '@reduxjs/toolkit'
 import { AxiosError } from 'axios'
 import { IBooksResponse } from '../../@types/books.types'
 import { BooksState } from '../../@types/ui.types'
@@ -6,14 +10,22 @@ import axios from '../../axios'
 
 const API_KEY = 'AIzaSyCScDXqEdHBWgz5mVXr5zEPfiaocrYa-f0'
 
+interface ToggleFiltersPayload {
+	element: 'category' | 'orderBy'
+	filter: string
+}
+
 export const fetchBooks = createAsyncThunk<IBooksResponse, BooksState>(
 	'books/fetchBooks',
 	async (booksState, thunkAPI) => {
 		try {
 			const { data } = await axios.get(
-				`?q='${booksState.search}'&orderBy=${booksState.orderBy}&startIndex=${booksState.pagination}&maxResults=30&key=${API_KEY}`
+				`?q=intitle:${booksState.search}${
+					booksState.category !== 'all' ? `+subject:${booksState.category}` : ''
+				}&orderBy=${booksState.orderBy}&startIndex=${
+					booksState.pagination
+				}&maxResults=30&key=${API_KEY}`
 			)
-			console.log(booksState.books.length)
 			return data
 		} catch (error) {
 			return thunkAPI.rejectWithValue((error as AxiosError).response?.data)
@@ -24,7 +36,7 @@ export const fetchBooks = createAsyncThunk<IBooksResponse, BooksState>(
 const initialState: BooksState = {
 	books: [],
 	booksLength: 0,
-	status: 'loading',
+	status: 'idle',
 	search: '',
 	orderBy: 'relevance',
 	category: 'all',
@@ -46,6 +58,10 @@ const booksSlice = createSlice({
 		fetchMoreBooks(state, action) {
 			state.pagination = action.payload
 			state.isInitialRequest = false
+		},
+		toggleFilters(state, action: PayloadAction<ToggleFiltersPayload>) {
+			const { element, filter } = action.payload
+			state[element] = filter
 		},
 	},
 	extraReducers: builder => {
@@ -77,5 +93,6 @@ const booksSlice = createSlice({
 	},
 })
 
-export const { setSearchText, fetchMoreBooks } = booksSlice.actions
+export const { setSearchText, fetchMoreBooks, toggleFilters } =
+	booksSlice.actions
 export const booksReducer = booksSlice.reducer
